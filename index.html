@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justin's Job Application Tracker</title>
+    <style>
+        :root {
+            --primary: #2b6777;
+            --secondary: #c8d8e4;
+            --success: #52ab98;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #f2f2f2;
+            --white: #ffffff;
+            --dark: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 25px 0;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        header h1 {
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .dashboard {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            min-width: 220px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-card.total {
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card.pending {
+            border-top: 4px solid var(--warning);
+        }
+
+        .stat-card.replied {
+            border-top: 4px solid var(--success);
+        }
+
+        .stat-card.rejected {
+            border-top: 4px solid var(--danger);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-bar {
+            display: flex;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--secondary);
+            border-radius: 6px 0 0 6px;
+            font-size: 16px;
+            background-color: var(--white);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-bar button {
+            padding: 12px 20px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .search-bar button:hover {
+            background-color: #235a68;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn,
+        .export-btn,
+        .import-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-btn {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .add-btn:hover {
+            background-color: #235a68;
+        }
+
+        .export-btn {
+            background-color: var(--success);
+            color: var(--white);
+        }
+
+        .export-btn:hover {
+            background-color: #41967f;
+        }
+
+        .import-btn {
+            background-color: var(--secondary);
+            color: var(--dark);
+        }
+
+        .import-btn:hover {
+            background-color: #b4c5d3;
+        }
+
+        .applications-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .applications-table th,
+        .applications-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--secondary);
+        }
+
+        .applications-table th {
+            background-color: var(--primary);
+            color: var(--white);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .applications-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .applications-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background-color: #ffeaa7;
+            color: #d68910;
+        }
+
+        .status-badge.replied {
+            background-color: #d5f5e3;
+            color: #27ae60;
+        }
+
+        .status-badge.follow-up {
+            background-color: #d6eaf8;
+            color: #2874a6;
+        }
+
+        .status-badge.rejected {
+            background-color: #fadbd8;
+            color: #c0392b;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn {
+            background-color: var(--secondary);
+            color: var(--dark);
+        }
+
+        .edit-btn:hover {
+            background-color: #b4c5d3;
+        }
+
+        .delete-btn {
+            background-color: #fadbd8;
+            color: #c0392b;
+        }
+
+        .delete-btn:hover {
+            background-color: #f5b7b1;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--secondary);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #777;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 0;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--secondary);
+        }
+
+        .save-btn,
+        .cancel-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .save-btn {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .save-btn:hover {
+            background-color: #235a68;
+        }
+
+        .cancel-btn {
+            background-color: #e9ecef;
+            color: var(--dark);
+        }
+
+        .cancel-btn:hover {
+            background-color: #dde2e6;
+        }
+
+        /* Icon styles */
+        .icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #777;
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: var(--white);
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background-color: var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                flex-direction: column;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .search-bar {
+                max-width: 100%;
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .applications-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <h1>Justin's Job Application Tracker</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="stat-card total">
+                <h3 id="totalApplications">0</h3>
+                <p>Total Applications</p>
+            </div>
+            <div class="stat-card pending">
+                <h3 id="pendingApplications">0</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card replied">
+                <h3 id="repliedApplications">0</h3>
+                <p>Replied</p>
+            </div>
+            <div class="stat-card rejected">
+                <h3 id="rejectedApplications">0</h3>
+                <p>Rejected</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search applications...">
+                <button id="searchBtn">Search</button>
+            </div>
+            <div class="action-buttons">
+                <button class="add-btn" id="openAddModal">
+                    + Add Application
+                </button>
+                <button class="export-btn" id="exportBtn">
+                    Export Data
+                </button>
+                <div style="position: relative;">
+                    <button class="import-btn" id="importBtnLabel">
+                        Import Data
+                    </button>
+                    <input type="file" id="importBtn" accept=".json" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <table class="applications-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Position</th>
+                    <th>Date Applied</th>
+                    <th>HR Contact</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="applicationsTableBody">
+                <!-- Table data will be populated dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add/Edit Application Modal -->
+    <div class="modal" id="applicationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Application</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="applicationForm">
+                <input type="hidden" id="applicationId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="companyName">Company Name</label>
+                        <input type="text" id="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="position">Position</label>
+                        <input type="text" id="position" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateApplied">Date Applied</label>
+                        <input type="date" id="dateApplied" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hrName">HR Contact Name</label>
+                        <input type="text" id="hrName">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hrEmail">HR Email</label>
+                        <input type="email" id="hrEmail">
+                    </div>
+                    <div class="form-group">
+                        <label for="hrPhone">HR Phone</label>
+                        <input type="tel" id="hrPhone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="applicationStatus">Status</label>
+                    <select id="applicationStatus" required>
+                        <option value="pending">Pending</option>
+                        <option value="replied">Replied</option>
+                        <option value="follow-up">Need Follow-up</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="save-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        let applications = [
+            {
+                id: 1,
+                company: "Tech Innovations Inc.",
+                position: "Senior Frontend Developer",
+                dateApplied: "2025-05-01",
+                hrName: "John Smith",
+                hrEmail: "john.smith@techinnovations.com",
+                hrPhone: "555-123-4567",
+                status: "pending",
+                notes: "Applied through LinkedIn. Job posting mentioned React and Vue experience."
+            },
+            {
+                id: 2,
+                company: "Global Solutions",
+                position: "Full Stack Engineer",
+                dateApplied: "2025-04-25",
+                hrName: "Emily Johnson",
+                hrEmail: "e.johnson@globalsolutions.com",
+                hrPhone: "555-987-6543",
+                status: "replied",
+                notes: "Had initial screening call on April 28. Technical interview scheduled for next week."
+            },
+            {
+                id: 3,
+                company: "Data Systems Corp",
+                position: "Software Developer",
+                dateApplied: "2025-04-15",
+                hrName: "Michael Brown",
+                hrEmail: "m.brown@datasystems.com",
+                hrPhone: "555-456-7890",
+                status: "follow-up",
+                notes: "No response yet. Should follow up by end of week."
+            },
+            {
+                id: 4,
+                company: "Innovative Startups",
+                position: "UI/UX Developer",
+                dateApplied: "2025-04-10",
+                hrName: "Sarah Wilson",
+                hrEmail: "sarah@innovativestartups.com",
+                hrPhone: "555-789-0123",
+                status: "rejected",
+                notes: "Received rejection email on April 20. Cited lack of specific industry experience."
+            }
+        ];
+
+        // DOM Elements
+        const applicationsTableBody = document.getElementById('applicationsTableBody');
+        const totalApplicationsEl = document.getElementById('totalApplications');
+        const pendingApplicationsEl = document.getElementById('pendingApplications');
+        const repliedApplicationsEl = document.getElementById('repliedApplications');
+        const rejectedApplicationsEl = document.getElementById('rejectedApplications');
+        const applicationModal = document.getElementById('applicationModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const applicationForm = document.getElementById('applicationForm');
+        const applicationIdInput = document.getElementById('applicationId');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+
+        // Helper functions
+        function getStatusDisplay(status) {
+            const statusMap = {
+                'pending': 'Pending',
+                'replied': 'Replied',
+                'follow-up': 'Need Follow-up',
+                'rejected': 'Rejected'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Display applications in the table
+        function renderApplications(apps = applications) {
+            applicationsTableBody.innerHTML = '';
+
+            if (apps.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" style="text-align: center;">No applications found</td>`;
+                applicationsTableBody.appendChild(row);
+                return;
+            }
+
+            apps.forEach(app => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${app.company}</td>
+                    <td>${app.position}</td>
+                    <td>${formatDate(app.dateApplied)}</td>
+                    <td>${app.hrName || 'N/A'}</td>
+                    <td><span class="status-badge ${app.status}">${getStatusDisplay(app.status)}</span></td>
+                    <td class="action-btns">
+                        <button class="edit-btn" data-id="${app.id}">Edit</button>
+                        <button class="delete-btn" data-id="${app.id}">Delete</button>
+                    </td>
+                `;
+
+                applicationsTableBody.appendChild(row);
+            });
+
+            // Add event listeners to buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    openEditModal(id);
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    deleteApplication(id);
+                });
+            });
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Update dashboard stats
+        function updateStats() {
+            const totalCount = applications.length;
+            const pendingCount = applications.filter(app => app.status === 'pending').length;
+            const repliedCount = applications.filter(app => app.status === 'replied').length;
+            const rejectedCount = applications.filter(app => app.status === 'rejected').length;
+
+            totalApplicationsEl.textContent = totalCount;
+            pendingApplicationsEl.textContent = pendingCount;
+            repliedApplicationsEl.textContent = repliedCount;
+            rejectedApplicationsEl.textContent = rejectedCount;
+        }
+
+        // Open modal to add new application
+        function openAddModal() {
+            modalTitle.textContent = 'Add New Application';
+            applicationIdInput.value = '';
+            applicationForm.reset();
+            document.getElementById('dateApplied').valueAsDate = new Date();
+            applicationModal.style.display = 'flex';
+        }
+
+        // Open modal to edit application
+        function openEditModal(id) {
+            const application = applications.find(app => app.id === id);
+            if (!application) return;
+
+            modalTitle.textContent = 'Edit Application';
+            applicationIdInput.value = application.id;
+            document.getElementById('companyName').value = application.company;
+            document.getElementById('position').value = application.position;
+            document.getElementById('dateApplied').value = application.dateApplied;
+            document.getElementById('hrName').value = application.hrName || '';
+            document.getElementById('hrEmail').value = application.hrEmail || '';
+            document.getElementById('hrPhone').value = application.hrPhone || '';
+            document.getElementById('applicationStatus').value = application.status;
+            document.getElementById('notes').value = application.notes || '';
+
+            applicationModal.style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            applicationModal.style.display = 'none';
+        }
+
+        // Save application (add or update)
+        function saveApplication(event) {
+            event.preventDefault();
+
+            const id = applicationIdInput.value ? parseInt(applicationIdInput.value) : generateId();
+            const newApplication = {
+                id: id,
+                company: document.getElementById('companyName').value,
+                position: document.getElementById('position').value,
+                dateApplied: document.getElementById('dateApplied').value,
+                hrName: document.getElementById('hrName').value,
+                hrEmail: document.getElementById('hrEmail').value,
+                hrPhone: document.getElementById('hrPhone').value,
+                status: document.getElementById('applicationStatus').value,
+                notes: document.getElementById('notes').value
+            };
+
+            if (applicationIdInput.value) {
+                // Update existing application
+                const index = applications.findIndex(app => app.id === id);
+                if (index !== -1) {
+                    applications[index] = newApplication;
+                }
+            } else {
+                // Add new application
+                applications.push(newApplication);
+            }
+
+            // Save to localStorage
+            saveToLocalStorage();
+
+            // Update UI
+            renderApplications();
+            updateStats();
+            closeModal();
+        }
+
+        // Delete application
+        function deleteApplication(id) {
+            if (confirm('Are you sure you want to delete this application?')) {
+                applications = applications.filter(app => app.id !== id);
+
+                // Save to localStorage
+                saveToLocalStorage();
+
+                // Update UI
+                renderApplications();
+                updateStats();
+            }
+        }
+
+        // Generate unique ID
+        function generateId() {
+            return applications.length > 0
+                ? Math.max(...applications.map(app => app.id)) + 1
+                : 1;
+        }
+
+        // Search applications
+        function searchApplications() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            if (!searchTerm) {
+                renderApplications();
+                return;
+            }
+
+            const filteredApps = applications.filter(app =>
+                app.company.toLowerCase().includes(searchTerm) ||
+                app.position.toLowerCase().includes(searchTerm) ||
+                app.hrName?.toLowerCase().includes(searchTerm) ||
+                getStatusDisplay(app.status).toLowerCase().includes(searchTerm)
+            );
+
+            renderApplications(filteredApps);
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('jobApplications', JSON.stringify(applications));
+        }
+
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('jobApplications');
+            if (saved) {
+                try {
+                    applications = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading saved applications:", e);
+                    applications = [];
+                }
+            }
+        }
+
+        // Export data to JSON file
+        function exportToJson() {
+            const dataStr = JSON.stringify(applications, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = 'job_applications_' + new Date().toISOString().split('T')[0] + '.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // Import data from JSON file
+        function importFromJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+
+                    if (Array.isArray(importedData)) {
+                        if (confirm('This will replace all your current applications. Continue?')) {
+                            applications = importedData;
+                            saveToLocalStorage();
+                            renderApplications();
+                            updateStats();
+                            alert('Applications imported successfully!');
+                        }
+                    } else {
+                        alert('Invalid data format. Please select a valid JSON file.');
+                    }
+                } catch (err) {
+                    console.error('Error importing data:', err);
+                    alert('Failed to import applications. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+
+            // Reset the file input so the same file can be imported again if needed
+            event.target.value = '';
+        }
+
+        // Event Listeners
+        document.getElementById('openAddModal').addEventListener('click', openAddModal);
+
+        document.querySelectorAll('.close-btn, .cancel-btn').forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+
+        applicationForm.addEventListener('submit', saveApplication);
+
+        searchBtn.addEventListener('click', searchApplications);
+
+        searchInput.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                searchApplications();
+            }
+        });
+
+        // Event listeners for import/export
+        document.getElementById('exportBtn').addEventListener('click', exportToJson);
+        document.getElementById('importBtn').addEventListener('change', importFromJson);
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function () {
+            loadFromLocalStorage();
+            renderApplications();
+            updateStats();
+        });
+    </script>
+</body>
+
+</html>
